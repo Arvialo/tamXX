@@ -1,3 +1,3 @@
 # tamXX
-
-***REVERSE TCP IN PYTHON***
+# REVERSE SHELL PYTHON
+*by arvialo*
