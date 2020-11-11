@@ -1,4 +1,6 @@
-# tamXX
+# tamcat
+What is tamcat ?
+TamCat is a python reverse shell to help in ctf
 # REVERSE SHELL PYTHON
 *by arvialo*
 
