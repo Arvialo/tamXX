@@ -6,9 +6,25 @@ import threading
 import time
 import subprocess
 import signal
+import readline
+import glob
 import random
 import pynput
 from pynput.keyboard import Key, Controller
+
+class tabCompleter():
+    def createListCompleter(self,ll):
+
+        def listCompleter(text,state):
+            line   = readline.get_line_buffer()
+
+            if not line:
+                return [c + " " for c in ll][state]
+
+            else:
+                return [c + " " for c in ll if c.startswith(line)][state]
+
+        self.listCompleter = listCompleter
 
 
 class netcat(object):
@@ -22,6 +38,8 @@ class netcat(object):
     tag = ""
     value = 'local'
     bufferSize = 2**12
+
+
 
 
 
@@ -142,6 +160,15 @@ class netcat(object):
         print("\nType help if you want some tips ! \n")
         self.init(conn)
         while True:
+            t = tabCompleter()
+            dir = "ls"
+            conn.send(dir.encode())
+            listDir = conn.recv(self.bufferSize).decode()
+            list = listDir.split('\n')
+            t.createListCompleter(list)
+            readline.set_completer_delims('\t')
+            readline.parse_and_bind("tab: complete")
+            readline.set_completer(t.listCompleter)
             command = input("%s@[%s] %s "%(self.user,self.home,self.tag))
             if 'clear' in command:
                 os.system('clear')
