@@ -123,28 +123,6 @@ class netcat(object):
 
 
 
-################## getters
-
-    def getHome(self,conn):
-        conn.send(b'pwd')
-        response = conn.recv(self.bufferSize).decode()
-        return response
-
-    def getUser(self,conn):
-        conn.send(b'whoami')
-        response = conn.recv(self.bufferSize).decode()
-        return response
-
-    def init(self,conn):
-        self.home = self.getHome(conn)
-        self.user = self.getUser(conn)
-        if self.user != 'root':
-            self.tag = "$"
-        else:
-            self.tag = "#"
-
-
-
 if __name__ == "__main__":
    ncat = netcat()
    ncat.main()
