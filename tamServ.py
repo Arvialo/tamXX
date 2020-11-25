@@ -7,7 +7,7 @@ import sys, os
 import subprocess
 
 
-class netcat(object):
+class netcatServ(object):
     listener = False
     clientHandler = False
     prompt = False
@@ -118,5 +118,5 @@ class netcat(object):
                     print('\n')
 
 if __name__ == "__main__":
-   ncat = netcat()
+   ncat = netcatServ()
    ncat.main()

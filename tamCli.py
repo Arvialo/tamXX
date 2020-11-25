@@ -3,7 +3,7 @@ import socket
 import sys, os
 import subprocess
 
-class netcat(object):
+class netcatCli(object):
     clientHandler = False
     port = 4444
     target = ""
@@ -105,5 +105,5 @@ class netcat(object):
 
 
 if __name__ == "__main__":
-   ncat = netcat()
+   ncat = netcatCli()
    ncat.main()

