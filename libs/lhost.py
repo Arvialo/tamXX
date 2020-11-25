@@ -3,6 +3,7 @@
 import sys
 import socket
 import readline
+import subprocess
 
 class Lhost:
 
@@ -30,14 +31,10 @@ class Lhost:
             newListArgs.append(arg)
         return newListArgs
 
-
-
-    def getDir(conn):
-        bufferSize = 2**12
+    def getDir():
         getDir = "ls"
-        conn.send(getDir.encode())
-        listDir = conn.recv(bufferSize).decode()
-        list = listDir.split('\n')
+        out = subprocess.getoutput(getDir)
+        list = out.split('\n')
 
         def completer(text, state):
             options = [cmd for cmd in list if cmd.startswith(text)]
@@ -49,14 +46,9 @@ class Lhost:
         readline.parse_and_bind("tab: complete")
         readline.set_completer(completer)
 
-
-
-    def init(conn):
-        bufferSize = 2**12
-        conn.send(b'pwd')
-        home = conn.recv(bufferSize).decode()
-        conn.send(b'whoami')
-        user = conn.recv(bufferSize).decode()
+    def init():
+        home = subprocess.getoutput('pwd')
+        user = subprocess.getoutput('whoami')
         if user != 'root':
             tag = "$"
         else:

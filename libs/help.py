@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 class Help:
-    def usageOn():
+    def usageOff():
         print("""
         tamXX Tool :\n
         [OPTIONS] :
@@ -12,7 +12,7 @@ class Help:
         \t\t-h , --help\t\t\t-     get some help ;)
         """)
         sys.exit()
-    def usageOff():
+    def usageOn():
         print("""
             WE ARE ON ! WHAT CAN I DO ?
             [OPTIONS] :
@@ -22,4 +22,4 @@ class Help:
             \t\tlinpeas\t\tupload linpeas.sh on machine
             \t\tshell\t\tget full interactive shell
             """)
-        sys.exit()
+        

