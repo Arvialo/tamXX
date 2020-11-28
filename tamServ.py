@@ -83,7 +83,10 @@ class netcatServ(object):
                         fini = "false"
                         while fini == "false":
                             recv = conn.recv(self.bufferSize).decode()
-                            print(recv)
+                            if "not found" in recv:
+                                print("This command don't exist !")
+                            else:
+                                print(recv)
                             if len(recv) < self.bufferSize:
                                 fini = "true"
                 except KeyboardInterrupt:

