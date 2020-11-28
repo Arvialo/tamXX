@@ -69,8 +69,8 @@ class netcatServ(object):
                     elif 'cd' in command:
                         conn.send(command.encode())
                         recv = conn.recv(self.bufferSize).decode()
-                        if "Error" in recv:
-                            print("Error")
+                        if "This folder doesn't exist" in recv:
+                            print(recv)
                         else:
                             self.home = recv
                     elif command == "":

@@ -113,4 +113,5 @@ def main():
                 except:
                     pass
     print("\n\n\n\033[32mPOTENTIAL PRIVILEGE ESCALATION (based on gtfobins' binaries) :\x1b[0m\n{0}".format(gtResult))
-main()
+if __name__ == "__main__":
+    main()

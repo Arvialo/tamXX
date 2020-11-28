@@ -60,9 +60,12 @@ class netcatCli(object):
 
 
     def clientLoop(self):
-        global length
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((self.target,self.port))
+        try:
+            s.connect((self.target,self.port))
+        except ConnectionRefusedError:
+            print("Connection refused on host (maybe port incorrect !)")
+            sys.exit()
         while True:
             recv = s.recv(self.bufferSize)
             recv = recv.decode('utf-8')
@@ -73,7 +76,7 @@ class netcatCli(object):
                     os.chdir(param)
                     s.send(os.getcwd().encode())
                 except:
-                    s.send(b"Error ! ")
+                    s.send(b"This folder doesn't exist")
             elif "exit" in recv or "quit" in recv:
                 s.close()
                 break
@@ -114,7 +117,7 @@ class netcatCli(object):
                     if len(content) < bufferSize:
                         fini = "true"
             f.close()
-            s.send(b"UPLOADED !")
+            conn.send(b"UPLOADED !")
         except PermissionError:
             conn.send(b"you can\'t upload here ! ")
 if __name__ == "__main__":
