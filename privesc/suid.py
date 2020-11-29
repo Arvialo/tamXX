@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, sys
-
+import pwd,grp
 
 def fourRights(nbr,perm,permission):
     if permission == "7":
@@ -74,6 +74,7 @@ def gtfobins(path):
     return gtResult
 
 def main():
+    print("ok")
     binaryPaths = ('/')
     print("""\033[32mColor Code :\x1b[0m
         \033[0;94m Blue Color : setuid + setgid
@@ -94,6 +95,11 @@ def main():
                     pass
                 try:
                     if int(specialPermission) >= 4:
+
+                        st = os.stat(absPath)
+                        ownername = pwd.getpwuid(st.st_uid).pw_name
+                        groupname = grp.getgrgid(st.st_gid)[0]
+
                         if subFile not in gtResult:
                             gtResult+=gtfobins(subFile)
                         firstPerm,permission = permission[0],permission[1:]
@@ -102,13 +108,13 @@ def main():
                                 nb+=1
                                 perm=fourRights(nb,perm,p)
                                 permi=perm
-                            print("\033[0;91m"+perm,absPath)
+                            print("\033[0;91m"+perm+"\t\t"+ownername+" "+groupname+"\t\t"+absPath)
                         elif firstPerm == "6":
                             for p in permission:
                                 nb+=1
                                 perm=sixRights(nb,perm,p)
                                 permi=perm
-                            print("\033[0;94m"+perm,absPath)
+                            print("\033[0;94m"+perm+"\t\t"+ownername+" "+groupname+"\t\t"+absPath)
 
                 except:
                     pass
