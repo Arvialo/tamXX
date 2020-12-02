@@ -79,6 +79,7 @@ class netcatServ(object):
                         local = True
                         Help.usageOn()
                     else:
+                        print("\033[0;94m PLEASE WAIT ... \x1b[0m")
                         conn.send(command.encode())
                         fini = "false"
                         while fini == "false":
