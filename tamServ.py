@@ -14,6 +14,7 @@ class netcatServ(object):
     port = 4444
     target = ""
     bufferSize = 2**12
+    path = os.getcwd()
 
     def main(self):
 
@@ -28,15 +29,15 @@ class netcatServ(object):
             elif opt == "h%" or opt == "help%" or opt == "help" or opt == "h":
                 Help.usageOff()
 
-            elif "p%" in opt or "   port%" in opt:
+            elif "p%" in opt or "port%" in opt:
                 opts = opt.split("%")
                 self.port = int(opts[1])
 
-            elif "target%" in opt:
+            elif "T%" in opt or "target%":
                 opts = opt.split("%")
                 self.target = opts[1]
 
-            elif opt == "prompt%" or opt == "prompt":
+            elif opt == "P%" or opt == "P" opt == "prompt%" or opt == "prompt":
                 self.clientHandler = True
 
             else:
@@ -100,17 +101,15 @@ class netcatServ(object):
                     command = input('\033[31m'+"(local) \x1b[0m\033[93m\033[1m%s\x1b[0m\033[93m@[%s] %s "%(user,home,tag) + '\x1b[0m')
                     if 'help' in command:
                         Help.usageOn()
-                    elif command == "linpeas":
-                        print(conn)
-                        Rhost.linpeas(conn)
                     elif command == "shell":
                         Rhost.shell(conn)
                         conn.recv(self.bufferSize).decode()
                     elif "upload " in command:
                         param = command.split(" ")
                         param = param[1:]
+                        iface = input("Interface (vpn/local): ")
                         try:
-                            Rhost.upload(conn,param[0],param[1])
+                            Rhost.upload(conn,iface,param[0],param[1],self.path)
                         except IndexError:
                             print("Error ! Missing one argument !")
                     elif command == "exit":

